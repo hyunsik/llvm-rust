@@ -151,7 +151,7 @@ impl<'a, 'b:'a> ExecutionEngine<'a, 'b> for JitEngine<'a> {
                 MCJMM: ptr::null_mut()
             };
             let size = mem::size_of::<LLVMMCJITCompilerOptions>();
-            let result = engine::LLVMCreateMCJITCompilerForModule(&mut ee, (&*module).into(), &mut options, size as size_t, &mut out);
+            let result = engine::LLVMCreateMCJITCompilerForModule(&mut ee, (&*module).into(), &mut options, size as u64, &mut out);
             if result == 0 {
                 Ok(ee.into())
             } else {
