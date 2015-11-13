@@ -13,6 +13,7 @@ use util::CastFrom;
 /// A PHI node represents a value which is selected based on the predecessor of the current block.
 pub struct PhiNode;
 native_ref!(&PhiNode = LLVMValueRef);
+deref!(PhiNode, Value);
 
 impl PhiNode {
   /// Adds an incoming value to the end of this PHI node.
@@ -51,5 +52,3 @@ impl CastFrom for PhiNode {
     }
   }
 }
-
-deref!(PhiNode, Value);
