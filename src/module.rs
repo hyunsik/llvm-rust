@@ -5,6 +5,7 @@ use ffi::{analysis, core, linker, LLVMModule};
 use ffi::transforms::pass_manager_builder as builder;
 use ffi::bit_writer as writer;
 use ffi::bit_reader as reader;
+use ffi::ir_reader as ir_reader;
 use cbox::{CBox, CSemiBox};
 use std::ffi::CString;
 use std::iter::{Iterator, IntoIterator};
@@ -63,6 +64,20 @@ impl Module {
             util::ptr_to_null(ptr)
         })
     }
+    
+    pub fn parse_ir<'a>(context: &'a Context, path: &str) -> Result<CSemiBox<'a, Module>, CBox<str>> {
+    	unsafe {
+            let mut out = mem::uninitialized();
+            let mut err = mem::uninitialized();
+            let buf = try!(MemoryBuffer::new_from_file(path));
+            if ir_reader::LLVMParseIRInContext(context.into(), buf.as_ptr(), &mut out, &mut err) == 1 {
+            	Err(CBox::new(err))
+            } else {
+              Ok(CSemiBox::new(out))
+            }
+      }
+    }
+    
     /// Parse this bitcode file into a module, or return an error string.
     pub fn parse_bitcode<'a>(context: &'a Context, path: &str) -> Result<CSemiBox<'a, Module>, CBox<str>> {
         unsafe {
@@ -133,6 +148,13 @@ impl Module {
             let target = core::LLVMGetTarget(self.into());
             util::to_str(target as *mut c_char)
         }
+    }
+    
+    pub fn get_data_layout(&self) -> &str {
+    	unsafe {
+    		let layout = core::LLVMGetDataLayout(self.into());
+    		util::to_str(layout as *mut c_char)
+    	}
     }
 
     /// Set the target data of this module to the target data string given.
