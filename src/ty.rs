@@ -127,6 +127,15 @@ impl CastFrom for StructType {
         }
     }
 }
+
+impl fmt::Display for Type {
+  fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+  	write!(f, "{}", unsafe {
+  			util::to_str(core::LLVMPrintTypeToString(self.into()))
+		})
+  }
+}
+
 deref!(StructType, Type);
 get_context!(StructType, LLVMGetTypeContext);
 to_str!(StructType, LLVMPrintTypeToString);

@@ -12,11 +12,12 @@ fn main() {
     let builder = Builder::new(&ctx);
     builder.position_at_end(entry);
     let value = &func[0];
-    let sin_v = builder.build_call(sin, &[value]);
-    let cos_v = builder.build_call(cos, &[value]);
-    let value = builder.build_div(sin_v, cos_v);
-    builder.build_ret(value);
+    let sin_v = builder.create_call(sin, &[value]);
+    let cos_v = builder.create_call(cos, &[value]);
+    let value = builder.create_div(sin_v, cos_v);
+    builder.create_ret(value);
     module.verify().unwrap();
+    
     let ee = JitEngine::new(&module, JitOptions {opt_level: 0}).unwrap();
     ee.with_function(func, |tan:extern fn(f64) -> f64| {
         for i in 0..10 {
