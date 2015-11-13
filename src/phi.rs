@@ -1,9 +1,18 @@
-use value::Value;
-use block::BasicBlock;
+use std::mem;
+use std::ops::Deref;
+use std::ptr;
+
 use ffi::core;
+use ffi::prelude::LLVMValueRef;
+
+use block::BasicBlock;
+use value::Value;
+use util::CastFrom;
+
 
 /// A PHI node represents a value which is selected based on the predecessor of the current block.
-pub type PhiNode = Value;
+pub struct PhiNode;
+native_ref!(&PhiNode = LLVMValueRef);
 
 impl PhiNode {
   /// Adds an incoming value to the end of this PHI node.
@@ -28,3 +37,19 @@ impl PhiNode {
     unsafe { core::LLVMGetIncomingBlock(self.into(), index) }.into()
   }
 }
+
+impl CastFrom for PhiNode {
+  type From = Value;
+  fn cast(value: &Value) -> Option<&PhiNode> {
+    unsafe {
+      let node = core::LLVMIsAPHINode(value.into());
+      if node == ptr::null_mut() {
+          None
+      } else {
+          Some(node.into())
+      }
+    }
+  }
+}
+
+deref!(PhiNode, Value);
