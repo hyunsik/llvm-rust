@@ -55,6 +55,15 @@ impl Builder
     CSemiBox::new(unsafe { core::LLVMCreateBuilderInContext(context.into()) }.into())
   }
   
+  pub fn get_insert_block(&self) -> &BasicBlock {
+    unsafe { core::LLVMGetInsertBlock(self.into()) }.into()
+  }
+  
+  /// Position the builder at `instr` within `block`.
+  pub fn position_at(&self, block: &BasicBlock, instr: &Value) {
+    unsafe { core::LLVMPositionBuilder(self.into(), block.into(), instr.into()) }
+  }
+  
   /// Position the builder at the end of `block`.
   pub fn position_at_end(&self, block: &BasicBlock) 
   {
