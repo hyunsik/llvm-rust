@@ -1,4 +1,5 @@
 use std::mem;
+use std::ffi::CString;
 
 use cbox::{CSemiBox, DisposeRef};
 use ffi::prelude::{LLVMBuilderRef, LLVMValueRef};
@@ -9,6 +10,7 @@ use context::Context;
 use block::BasicBlock;
 use ty::Type;
 use value::{Function, Value, Predicate};
+use phi::PhiNode;
 
 static NULL_NAME:[c_char; 1] = [0];
 
@@ -204,6 +206,15 @@ impl Builder
     	                           NULL_NAME.as_ptr()).into() 
     }
   }
+  
+     /// Build an instruction to select a value depending on the predecessor of the current block.
+  pub fn create_phi(&self, ty: &Type, name: &str) -> &PhiNode 
+  {
+	  unsafe { 
+	  	core::LLVMBuildPhi(self.into(), ty.into(), CString::new(name).unwrap().as_ptr()) 
+  	}.into()
+  }  
+  
   /// Build an instruction that runs whichever block matches the value, or `default` if none of them matched it.
   pub fn create_switch(&self, 
   	                   value: &Value, 
