@@ -27,58 +27,71 @@ impl Type
       T::get_type(ctx)
   }
   
+  #[inline(always)]
+  /// Return the type kind for the type.
   pub fn kind(&self) -> LLVMTypeKind 
   {
   	unsafe { core::LLVMGetTypeKind(self.into()) }
   }
   
-  pub fn void<'a>(ctx: &'a Context) -> &'a Type 
+  #[inline(always)]
+  pub fn void_ty<'a>(ctx: &'a Context) -> &'a Type 
   {
   	unsafe { core::LLVMVoidTypeInContext(ctx.into()) }.into()
   }
   
-  pub fn bool<'a>(ctx: &'a Context) -> &'a Type 
+  #[inline(always)]
+  pub fn bool_ty<'a>(ctx: &'a Context) -> &'a Type 
   {
-  	Type::i8(ctx)
+  	Type::i8_ty(ctx)
   }
   
-  pub fn i8<'a>(ctx: &'a Context) -> &'a Type 
+  #[inline(always)]
+  pub fn i8_ty<'a>(ctx: &'a Context) -> &'a Type 
   {
   	unsafe { core::LLVMInt8TypeInContext(ctx.into()) }.into()
   }
   
-  pub fn i16<'a>(ctx: &'a Context) -> &'a Type 
+  #[inline(always)]
+  pub fn i16_ty<'a>(ctx: &'a Context) -> &'a Type 
   {
     unsafe { core::LLVMInt16TypeInContext(ctx.into()) }.into()
   }
   
-  pub fn i32<'a>(ctx: &'a Context) -> &'a Type 
+  #[inline(always)]
+  pub fn i32_ty<'a>(ctx: &'a Context) -> &'a Type 
   {
     unsafe { core::LLVMInt32TypeInContext(ctx.into()) }.into()
   }
-  	
-  pub fn i64<'a>(ctx: &'a Context) -> &'a Type 
+
+	#[inline(always)]  	
+  pub fn i64_ty<'a>(ctx: &'a Context) -> &'a Type 
   {
     unsafe { core::LLVMInt64TypeInContext(ctx.into()) }.into()
   }
   
-  pub fn f32<'a>(ctx: &'a Context) -> &'a Type 
+  #[inline(always)]
+  pub fn f32_ty<'a>(ctx: &'a Context) -> &'a Type 
   {
     unsafe { core::LLVMFloatTypeInContext(ctx.into()) }.into()
   }
   
-  pub fn f64<'a>(ctx: &'a Context) -> &'a Type 
+  #[inline(always)]
+  pub fn f64_ty<'a>(ctx: &'a Context) -> &'a Type 
   {
     unsafe { core::LLVMDoubleTypeInContext(ctx.into()) }.into()
   }
   
-  pub fn array<'a>(ty: &'a Type, size: u32) -> &'a Type
+	/// Make a new array with the length given.
+	#[inline(always)]
+  pub fn array_ty<'a>(element: &'a Type, length: usize) -> &'a Type 
   {
-  	unsafe { core::LLVMArrayType(ty.into(), size) }.into()
+    unsafe { core::LLVMArrayType(element.into(), length as c_uint) }.into()
   }
   
   /// Make a new function signature with the return type and arguments given.
-  pub fn new_function<'a>(ret: &'a Type, args: &[&'a Type]) -> &'a FunctionType 
+  #[inline(always)]
+  pub fn function_ty<'a>(ret: &'a Type, args: &[&'a Type]) -> &'a FunctionType 
   {
     unsafe { 
     	core::LLVMFunctionType(ret.into(), 
@@ -87,26 +100,23 @@ impl Type
    	}.into()
   }
   
-  /// Make a new array with the length given.
-  pub fn new_array<'a>(element: &'a Type, length: usize) -> &'a Type 
-  {
-      unsafe { core::LLVMArrayType(element.into(), length as c_uint) }.into()
-  }
-  
   /// Make a new vector with the length given.
-  pub fn new_vector<'a>(element: &'a Type, length: usize) -> &'a Type 
+  #[inline(always)]
+  pub fn vector_ty<'a>(element: &'a Type, length: usize) -> &'a Type 
   {
     unsafe { core::LLVMVectorType(element.into(), length as c_uint) }.into()
   }
   
   /// Make a new pointer with the given element type.
-  pub fn new_pointer<'a>(elem: &'a Type) -> &'a Type 
+  #[inline(always)]
+  pub fn pointer_ty<'a>(elem: &'a Type) -> &'a Type 
   {
     unsafe { core::LLVMPointerType(elem.into(), 0 as c_uint) }.into()
   }
   
   /// Make a new structure type with the given types.
-  pub fn new_struct<'a>(elems: &[&'a Type], packed: bool) -> &'a Type 
+  #[inline(always)]
+  pub fn struct_ty<'a>(elems: &[&'a Type], packed: bool) -> &'a Type 
   {
     unsafe { 
     	core::LLVMStructType(elems.as_ptr() as *mut LLVMTypeRef, 
@@ -118,12 +128,14 @@ impl Type
   /// Returns true if the size of the type is known at compile-time.
   ///
   /// This is equivalent to the type implementing `Sized` in Rust
+  #[inline(always)]
   pub fn is_sized(&self) -> bool 
   {
     unsafe { core::LLVMTypeIsSized(self.into()) != 0 }
   }
   
   /// Returns true if this type is a function.
+  #[inline(always)]
   pub fn is_function(&self) -> bool 
   {
     let kind = unsafe { core::LLVMGetTypeKind(self.into()) };
@@ -131,6 +143,7 @@ impl Type
   }
   
   /// Returns true if this type is a struct.
+  #[inline(always)]
   pub fn is_struct(&self) -> bool 
   {
     let kind = unsafe { core::LLVMGetTypeKind(self.into()) };
@@ -138,6 +151,7 @@ impl Type
   }
   
   /// Returns true if this type is void.
+  #[inline(always)]
   pub fn is_void(&self) -> bool 
   {
     let kind = unsafe { core::LLVMGetTypeKind(self.into()) };
@@ -145,6 +159,7 @@ impl Type
   }
   
   /// Returns true if this type is a pointer.
+  #[inline(always)]
   pub fn is_pointer(&self) -> bool 
   {
     let kind = unsafe { core::LLVMGetTypeKind(self.into()) };
@@ -152,6 +167,7 @@ impl Type
   }
   
   /// Returns true if this type is an integer.
+  #[inline(always)]
   pub fn is_integer(&self) -> bool 
   {
     let kind = unsafe { core::LLVMGetTypeKind(self.into()) };
@@ -159,6 +175,7 @@ impl Type
   }
   
   /// Returns true if this type is any floating-point number.
+  #[inline(always)]
   pub fn is_float(&self) -> bool 
   {
     let kind = unsafe { core::LLVMGetTypeKind(self.into()) } as c_uint;
@@ -168,12 +185,14 @@ impl Type
   }
   
   /// Returns the size of the type in bytes.
+  #[inline(always)]
   pub fn get_size(&self, target: &TargetData) -> usize 
   {
     unsafe { target::LLVMABISizeOfType(target.into(), self.into()) as usize }
   }
   
   /// Returns the element of this pointer type.
+  #[inline(always)]
   pub fn get_element(&self) -> Option<&Type> 
   {
     unsafe { mem::transmute(core::LLVMGetElementType(self.into())) }
@@ -307,13 +326,13 @@ mod tests {
 	pub fn test_types() 
 	{
 		let ctx    = Context::new();
-		assert_eq!("i8",     format!("{}", Type::i8(&ctx)));
-		assert_eq!("i16",    format!("{}", Type::i16(&ctx)));
-		assert_eq!("i32",    format!("{}", Type::i32(&ctx)));
-		assert_eq!("i64",    format!("{}", Type::i64(&ctx)));
-		assert_eq!("float",  format!("{}", Type::f32(&ctx)));
-		assert_eq!("double", format!("{}", Type::f64(&ctx)));
+		assert_eq!("i8",     format!("{}", Type::i8_ty(&ctx)));
+		assert_eq!("i16",    format!("{}", Type::i16_ty(&ctx)));
+		assert_eq!("i32",    format!("{}", Type::i32_ty(&ctx)));
+		assert_eq!("i64",    format!("{}", Type::i64_ty(&ctx)));
+		assert_eq!("float",  format!("{}", Type::f32_ty(&ctx)));
+		assert_eq!("double", format!("{}", Type::f64_ty(&ctx)));
 		
-		assert_eq!("[10 x double]",  format!("{}", Type::array(&Type::f64(&ctx), 10)));
+		assert_eq!("[10 x double]",  format!("{}", Type::array_ty(&Type::f64_ty(&ctx), 10)));
 	}
 }

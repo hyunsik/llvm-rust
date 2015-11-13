@@ -93,7 +93,7 @@ impl<'a> Compile<'a> for *const c_char {
         }
     }
     fn get_type(ctx: &'a Context) -> &'a Type {
-        Type::new_pointer(Type::get::<c_char>(ctx))
+        Type::pointer_ty(Type::get::<c_char>(ctx))
     }
 }
 impl<'a> Compile<'a> for *const str {
@@ -170,7 +170,7 @@ macro_rules! compile_array(
                 unsafe { core::LLVMConstVector(values.as_ptr() as *mut LLVMValueRef, $num) }.into()
             }
             fn get_type(context: &'a Context) -> &'a Type {
-                Type::new_vector(Type::get::<T>(context), $num)
+                Type::vector_ty(Type::get::<T>(context), $num)
             }
         }
     )
@@ -194,7 +194,7 @@ macro_rules! compile_func(
                 }.into()
             }
             fn get_type(context: &'a Context) -> &'a Type {
-                Type::new_function(R::get_type(context), &[$($name::get_type(context)),*])
+                Type::function_ty(R::get_type(context), &[$($name::get_type(context)),*])
             }
         }
         impl<'a, R, $($name),*> Compile<'a> for extern fn($($name),*) -> R where R:Compile<'a>, $($name:Compile<'a>),* {
@@ -206,7 +206,7 @@ macro_rules! compile_func(
                 }.into()
             }
             fn get_type(context: &'a Context) -> &'a Type {
-                Type::new_function(R::get_type(context), &[$($name::get_type(context)),*])
+                Type::function_ty(R::get_type(context), &[$($name::get_type(context)),*])
             }
         }
     )
