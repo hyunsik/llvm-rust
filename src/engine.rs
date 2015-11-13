@@ -81,6 +81,12 @@ pub trait ExecutionEngine<'a, 'b:'a> where LLVMExecutionEngineRef:From<&'b Self>
             mem::transmute(engine::LLVMGetGlobalValueAddress(self.into(), ptr))
         )
     }
+    
+    /// Maps a global to a specific memory location.
+    unsafe fn add_global_mapping<T>(&'b self, global: &'a Value, addr: *const T) 
+    {
+      engine::LLVMAddGlobalMapping(self.into(), global.into(), mem::transmute(addr));
+    }
 }
 
 /// The options to pass to the MCJIT backend.
