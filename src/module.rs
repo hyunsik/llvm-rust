@@ -252,7 +252,7 @@ impl<'a> IntoIterator for &'a Module {
     }
 }
 get_context!(Module, LLVMGetModuleContext);
-to_str!(Module, LLVMPrintModuleToString);
+impl_display!(Module, LLVMPrintModuleToString);
 dispose!(Module, LLVMModule, core::LLVMDisposeModule);
 #[derive(Copy, Clone)]
 /// An iterator through the functions contained in a module.

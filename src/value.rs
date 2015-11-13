@@ -320,4 +320,4 @@ impl GetContext for Value {
         self.get_type().get_context()
     }
 }
-to_str!(Value, LLVMPrintValueToString);
+impl_display!(Value, LLVMPrintValueToString);

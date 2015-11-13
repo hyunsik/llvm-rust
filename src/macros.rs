@@ -154,18 +154,30 @@ macro_rules! native_ref(
         }
     )
 );
-macro_rules! to_str(
-    ($ty:ty, $func:ident) => (
-        impl fmt::Debug for $ty {
-            fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-                fmt.write_str(unsafe {
-                    let c_str = core::$func(self.into());
-                    util::to_str(c_str)
-                })
-            }
-        }
-    );
+
+macro_rules! impl_display(
+	($ty:ty, $func:ident) => (
+  	impl fmt::Debug for $ty {
+    	fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+				fmt.write_str(unsafe {
+        	let c_str = core::$func(self.into());
+        	util::to_str(c_str)
+        })
+		  }
+    }
+  	
+  	impl fmt::Display for $ty {
+    	fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+				fmt.write_str(unsafe {
+        	let c_str = core::$func(self.into());
+        	util::to_str(c_str)
+        })
+		  }
+    }
+  );
 );
+
+
 macro_rules! get_context(
     ($ty:ty, $func:ident) => (
         impl GetContext for $ty {

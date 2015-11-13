@@ -16,7 +16,7 @@ use util::{self, CastFrom};
 pub struct Type;
 native_ref!(&Type = LLVMTypeRef);
 get_context!(Type, LLVMGetTypeContext);
-to_str!(Type, LLVMPrintTypeToString);
+impl_display!(Type, LLVMPrintTypeToString);
 
 impl Type 
 {
@@ -184,6 +184,10 @@ impl Type
 /// A structure type, such as a tuple or struct.
 pub struct StructType;
 native_ref!(&StructType = LLVMTypeRef);
+deref!(StructType, Type);
+get_context!(StructType, LLVMGetTypeContext);
+impl_display!(StructType, LLVMPrintTypeToString);
+
 impl StructType 
 {
   /// Make a new struct with the given fields and packed representation.
@@ -242,44 +246,12 @@ impl CastFrom for StructType
 }
 
 
-impl fmt::Display for Type {
-  fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-  	write!(f, "{}", unsafe {
-  			util::to_str(core::LLVMPrintTypeToString(self.into()))
-		})
-  }
-}
-
-
-deref!(StructType, Type);
-get_context!(StructType, LLVMGetTypeContext);
-to_str!(StructType, LLVMPrintTypeToString);
-
-
 /// A function signature type.
 pub struct FunctionType;
 native_ref!(&FunctionType = LLVMTypeRef);
 deref!(FunctionType, Type);
-
-impl CastFrom for FunctionType {
-  type From = Type;
-  fn cast(mut ty: &Type) -> Option<&FunctionType> {
-    unsafe {
-      use libc::c_uint;
-      while let Some(elem) = ty.get_element() {
-	      ty = elem;
-      }
-      
-      let kind = core::LLVMGetTypeKind(ty.into());
-      if kind as c_uint == LLVMTypeKind::LLVMFunctionTypeKind as c_uint {
-      	mem::transmute(ty)
-      } else {
-      	None
-      }
-    }
-  }
-}
-
+get_context!(FunctionType, LLVMGetTypeContext);
+impl_display!(FunctionType, LLVMPrintTypeToString);
 
 impl FunctionType 
 {
@@ -306,8 +278,24 @@ impl FunctionType
   }
 }
 
-get_context!(FunctionType, LLVMGetTypeContext);
-to_str!(FunctionType, LLVMPrintTypeToString);
+impl CastFrom for FunctionType {
+  type From = Type;
+  fn cast(mut ty: &Type) -> Option<&FunctionType> {
+    unsafe {
+      use libc::c_uint;
+      while let Some(elem) = ty.get_element() {
+	      ty = elem;
+      }
+      
+      let kind = core::LLVMGetTypeKind(ty.into());
+      if kind as c_uint == LLVMTypeKind::LLVMFunctionTypeKind as c_uint {
+      	mem::transmute(ty)
+      } else {
+      	None
+      }
+    }
+  }
+}
 
 
 #[cfg(test)]
