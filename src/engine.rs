@@ -1,4 +1,4 @@
-use libc::{c_int, c_uint, c_ulonglong, size_t};
+use libc::{c_int, c_uint, c_ulonglong};
 use ffi::{core, target};
 use ffi::execution_engine as engine;
 use ffi::execution_engine::*;
@@ -20,6 +20,7 @@ use value::{Function, Value};
 pub trait ExecutionEngine<'a, 'b:'a> where LLVMExecutionEngineRef:From<&'b Self> {
     /// The options given to the engine upon creation.
     type Options : Copy;
+    
     /// Create a new execution engine with the given `Module` and options, or return a
     /// description of the error.
     fn new(module: &'a Module, options: Self::Options) -> Result<Self, CBox<str>>;
@@ -109,8 +110,16 @@ impl<'a, 'b> JitEngine<'a> {
             let arg = Type::get::<A>(ctx);
             if let Some(args) = StructType::cast(arg) {
                 assert_eq!(sig.get_params(), args.get_elements());
+            
             } else {
-                assert_eq!(arg, sig.get_return());
+              let nparams = sig.get_params().len();
+              if nparams == 1 {
+                assert_eq!(arg, sig.get_params()[0]);
+              } else if nparams == 0 {
+                assert_eq!(arg, Type::get::<()>(ctx));
+              } else {
+                panic!("array type arguments are not yet supported; use a tuple or struct instead");
+              }
             }
         }
         unsafe {
