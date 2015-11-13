@@ -234,6 +234,7 @@ impl Builder
   bin_op!{create_ashr, LLVMBuildAShr}
   bin_op!{create_and, LLVMBuildAnd}
   bin_op!{create_or, LLVMBuildOr}
+  bin_op!{create_xor, LLVMBuildXor}
   
   /// Build an instruction to compare two values with the predicate given.
   pub fn create_cmp(&self, a: &Value, b: &Value, pred: Predicate) -> &Value 
