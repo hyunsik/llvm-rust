@@ -15,6 +15,19 @@ pub trait Compile<'a> {
     /// Get the type descriptor for this type in the context given.
     fn get_type(context: &'a Context) -> &'a Type;
 }
+
+impl<'a> Compile<'a> for *const u64
+{
+	fn compile(self, ctx: &'a Context) -> &'a Value 
+	{
+		unimplemented!()
+	}
+	
+	fn get_type(ctx: &'a Context) -> &'a Type {
+		unimplemented!()
+  }
+}
+
 macro_rules! compile_int(
     ($uty:ty, $sty:ty, $ctx:ident => $ty_ex:expr) => (
         impl<'a> Compile<'a> for $uty {

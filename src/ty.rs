@@ -15,9 +15,62 @@ native_ref!(&Type = LLVMTypeRef);
 impl Type {
     #[inline(always)]
     /// Get the type given as an LLVM type descriptor in the context given.
-    pub fn get<'a, T>(context:&'a Context) -> &'a Type where T:Compile<'a> {
-        T::get_type(context)
+    pub fn get<'a, T>(ctx:&'a Context) -> &'a Type where T:Compile<'a> {
+        T::get_type(ctx)
     }
+    
+   	pub fn kind(&self) -> LLVMTypeKind 
+  	{
+    	unsafe { 
+      	core::LLVMGetTypeKind(self.into())
+    	}
+  	}
+  	
+  	pub fn void<'a>(ctx: &'a Context) -> &'a Type 
+  	{
+			unsafe { core::LLVMVoidTypeInContext(ctx.into()) }.into()
+  	}
+  	
+  	pub fn bool<'a>(ctx: &'a Context) -> &'a Type 
+  	{
+			Type::i8(ctx)
+  	}
+  	
+  	pub fn i8<'a>(ctx: &'a Context) -> &'a Type 
+  	{
+    	unsafe { core::LLVMInt8TypeInContext(ctx.into()) }.into()
+  	}
+  	
+  	pub fn i16<'a>(ctx: &'a Context) -> &'a Type 
+	  {
+	    unsafe { core::LLVMInt16TypeInContext(ctx.into()) }.into()
+	  }
+	  
+	  pub fn i32<'a>(ctx: &'a Context) -> &'a Type 
+	  {
+	    unsafe { core::LLVMInt32TypeInContext(ctx.into()) }.into()
+	  }
+	
+	  pub fn i64<'a>(ctx: &'a Context) -> &'a Type 
+	  {
+	    unsafe { core::LLVMInt64TypeInContext(ctx.into()) }.into()
+	  }
+	  
+	  pub fn f32<'a>(ctx: &'a Context) -> &'a Type 
+	  {
+	    unsafe { core::LLVMFloatTypeInContext(ctx.into()) }.into()
+	  }
+		
+	  pub fn f64<'a>(ctx: &'a Context) -> &'a Type 
+	  {
+	    unsafe { core::LLVMDoubleTypeInContext(ctx.into()) }.into()
+	  }
+	  
+	  pub fn array<'a>(ty: &'a Type, size: u32) -> &'a Type
+	  {
+	  	unsafe { core::LLVMArrayType(ty.into(), size) }.into()
+		}
+    
     /// Make a new function signature with the return type and arguments given.
     pub fn new_function<'a>(ret: &'a Type, args: &[&'a Type]) -> &'a FunctionType {
         unsafe { core::LLVMFunctionType(ret.into(), args.as_ptr() as *mut LLVMTypeRef, args.len() as c_uint, 0) }.into()
@@ -182,3 +235,25 @@ impl FunctionType {
 }
 get_context!(FunctionType, LLVMGetTypeContext);
 to_str!(FunctionType, LLVMPrintTypeToString);
+
+
+
+#[cfg(test)]
+mod tests {
+	use context::Context;
+	use super::*;
+	
+	#[test]
+	pub fn test_types() 
+	{
+		let ctx    = Context::new();
+		assert_eq!("i8",     format!("{}", Type::i8(&ctx)));
+		assert_eq!("i16",    format!("{}", Type::i16(&ctx)));
+		assert_eq!("i32",    format!("{}", Type::i32(&ctx)));
+		assert_eq!("i64",    format!("{}", Type::i64(&ctx)));
+		assert_eq!("float",  format!("{}", Type::f32(&ctx)));
+		assert_eq!("double", format!("{}", Type::f64(&ctx)));
+		
+		assert_eq!("[10 x double]",  format!("{}", Type::array(&Type::f64(&ctx), 10)));
+	}
+}
