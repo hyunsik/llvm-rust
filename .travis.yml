@@ -24,4 +24,4 @@ script:
   - cargo run --example fib
 notifications:
   email:
-    - tophattedcoder@gmail.com
+    - hyunsik@apache.org
