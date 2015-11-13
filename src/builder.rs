@@ -250,6 +250,7 @@ impl Builder
   bin_op!{create_sub, LLVMBuildSub, LLVMBuildFSub}
   bin_op!{create_mul, LLVMBuildMul, LLVMBuildFMul}
   bin_op!{create_div, LLVMBuildSDiv, LLVMBuildFDiv}
+  bin_op!{create_rem, LLVMBuildSRem, LLVMBuildFRem}
   bin_op!{create_shl, LLVMBuildShl}
   bin_op!{create_ashr, LLVMBuildAShr}
   bin_op!{create_and, LLVMBuildAnd}
