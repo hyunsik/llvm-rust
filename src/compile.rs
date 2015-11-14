@@ -19,48 +19,37 @@ pub trait Compile<'a> {
   fn get_type(context: &'a Context) -> &'a Type;
 }
 
-impl<'a> Compile<'a> for *const u64
-{
-	fn compile(self, ctx: &'a Context) -> &'a Value 
-	{
-		unimplemented!()
-	}
-	
-	fn get_type(ctx: &'a Context) -> &'a Type {
-		unimplemented!()
-  }
-}
-
 macro_rules! compile_int(
-  ($uty:ty, $sty:ty, $ctx:ident => $ty_ex:expr) => (
-    impl<'a> Compile<'a> for $uty {
-      fn compile(self, context: &'a Context) -> &'a Value {
+  ($ty:ty, $ctx:ident => $ty_ex:expr) => (
+    impl<'a> Compile<'a> for $ty {
+      fn compile(self, context: &'a Context) -> &'a Value 
+      {
         unsafe { core::LLVMConstInt(Self::get_type(context).into(), self as c_ulonglong, 0) }.into()
       }
       
-      fn get_type($ctx: &'a Context) -> &'a Type {
+      fn get_type($ctx: &'a Context) -> &'a Type 
+      {
       	let $ctx = $ctx.into();
         unsafe { $ty_ex }.into()
         }
-      }
-      
-      impl<'a> Compile<'a> for $sty {
-      fn compile(self, context: &'a Context) -> &'a Value {
-      	unsafe { core::LLVMConstInt(Self::get_type(context).into(), self as c_ulonglong, 0) }.into()
-      }
-
-			fn get_type($ctx: &'a Context) -> &'a Type {
-      	let $ctx = $ctx.into();
-        unsafe { $ty_ex }.into()
-        }
-      }
-    );
+    }
+  );
   
-    ($uty:ty, $sty:ty, $func:ident) => (
-      compile_int!{$uty, $sty, ctx => core::$func(ctx)}
-    );
+  ($ty:ty, $func:ident) => (
+    compile_int!{$ty, ctx => core::$func(ctx)}
+  );
 );
 
+compile_int!{i8, LLVMInt8TypeInContext}
+compile_int!{u8, LLVMInt8TypeInContext}  
+compile_int!{i16, LLVMInt16TypeInContext}
+compile_int!{u16, LLVMInt16TypeInContext}
+compile_int!{i32, LLVMInt32TypeInContext}
+compile_int!{u32, LLVMInt32TypeInContext}
+compile_int!{i64, LLVMInt64TypeInContext}
+compile_int!{u64, LLVMInt64TypeInContext}
+compile_int!{usize, ctx => core::LLVMIntTypeInContext(ctx, mem::size_of::<isize>() as c_uint * 8)}
+compile_int!{isize, ctx => core::LLVMIntTypeInContext(ctx, mem::size_of::<isize>() as c_uint * 8)}
 
 impl<'a> Compile<'a> for bool 
 {
@@ -122,10 +111,10 @@ impl<'a> Compile<'a> for *const c_char
 {
   fn compile(self, context: &'a Context) -> &'a Value 
   {
-      unsafe {
-          let len = CStr::from_ptr(self).to_bytes().len();
-          core::LLVMConstStringInContext(context.into(), self, len as c_uint, 0).into()
-      }
+		unsafe {
+		  let len = CStr::from_ptr(self).to_bytes().len();
+		  core::LLVMConstStringInContext(context.into(), self, len as c_uint, 0).into()
+		}
   }
   
   fn get_type(ctx: &'a Context) -> &'a Type 
@@ -147,6 +136,27 @@ impl<'a> Compile<'a> for *const str
     <&str as Compile<'a>>::get_type(ctx)
   }
 }
+
+macro_rules! compile_for_ptr(
+  ($ty:ty, $ctx:ident) => (
+    impl<'a> Compile<'a> for *const $ty {
+      fn compile(self, context: &'a Context) -> &'a Value 
+      {
+        unimplemented!()
+      }
+      
+      fn get_type($ctx: &'a Context) -> &'a Type {
+      	unimplemented!()        
+      }
+    }
+  );
+);
+
+compile_for_ptr!(i16, XXX);
+compile_for_ptr!(i32, XXX);
+compile_for_ptr!(i64, XXX);
+compile_for_ptr!(f32, XXX);
+compile_for_ptr!(f64, XXX);
 
 
 impl<'a, 'b> Compile<'a> for &'b str 
@@ -182,13 +192,6 @@ impl<'a, 'b> Compile<'a> for &'b [u8]
     StructType::new(ctx, &[usize_t, usize_t], false)
   }
 }
-
-  
-compile_int!{u8, i8, LLVMInt8TypeInContext}
-compile_int!{u16, i16, LLVMInt16TypeInContext}
-compile_int!{u32, i32, LLVMInt32TypeInContext}
-compile_int!{u64, i64, LLVMInt64TypeInContext}
-compile_int!{usize, isize, ctx => core::LLVMIntTypeInContext(ctx, mem::size_of::<isize>() as c_uint * 8)}
 
 
 impl<'a> Compile<'a> for () 
