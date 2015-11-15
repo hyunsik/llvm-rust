@@ -281,6 +281,12 @@ impl Module
       }
     }
   }
+  
+  /// Dump the module to stderr (for debugging).
+  pub fn dump(&self) 
+  {
+  	unsafe { core::LLVMDumpModule(self.into()); }
+  }
 }
 
 get_context!(Module, LLVMGetModuleContext);
