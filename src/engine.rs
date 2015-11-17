@@ -1,4 +1,4 @@
-use libc::{c_int, c_uint, c_ulonglong};
+use libc::{c_int, c_void, c_uint, c_ulonglong};
 use ffi::{core, target};
 use ffi::execution_engine as engine;
 use ffi::execution_engine::*;
@@ -143,6 +143,15 @@ impl<'a, 'b> JitEngine<'a> {
     pub unsafe fn get_function<A, R>(&self, function: &'b Function) -> extern fn(A) -> R {
         let ptr:&u8 = self.get_global(function);
         mem::transmute(ptr)
+    }
+    
+    /// Returns a pointer to the machine code for the raw function poionter.
+    ///
+    /// This is marked as unsafe because the defined function signature and 
+    /// return could be different from their internal representation.
+    pub unsafe fn get_function_raw(&self, function: &'b Function) -> Option<*const ()> {
+        let ptr:&u8 = self.get_global(function);
+        Some(mem::transmute(ptr))
     }
 }
 impl<'a, 'b:'a> ExecutionEngine<'a, 'b> for JitEngine<'a> {
