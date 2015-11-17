@@ -242,7 +242,7 @@ pub struct Interpreter<'a>
 native_ref!{contra Interpreter, engine: LLVMExecutionEngineRef}
 
 impl<'a> Interpreter<'a> 
-  
+{  
   /// Run `function` with the arguments given as ``GenericValue`s, 
   /// then return the result as one.
   ///
