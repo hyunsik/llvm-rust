@@ -119,7 +119,7 @@ impl<'a> Compile<'a> for *const c_char
   
   fn get_type(ctx: &'a Context) -> &'a Type 
   {
-      Type::pointer_ty(Type::get::<c_char>(ctx))
+    Type::pointer_ty(Type::get::<c_char>(ctx))
   }
 }
 
@@ -140,21 +140,36 @@ impl<'a> Compile<'a> for *const str
 macro_rules! compile_for_ptr(
   ($ty:ty, $ctx:ident) => (
     impl<'a> Compile<'a> for *const $ty {
+      fn compile(self, ctx: &'a Context) -> &'a Value 
+      {
+        unimplemented!()
+      }
+      
+      fn get_type(ctx: &'a Context) -> &'a Type {
+      	Type::pointer_ty(Type::get::<$ty>(ctx))        
+      }
+    }
+    
+    impl<'a> Compile<'a> for *mut $ty {
       fn compile(self, context: &'a Context) -> &'a Value 
       {
         unimplemented!()
       }
       
-      fn get_type($ctx: &'a Context) -> &'a Type {
-      	unimplemented!()        
+      fn get_type(ctx: &'a Context) -> &'a Type {
+      	Type::pointer_ty(Type::get::<$ty>(ctx))        
       }
     }
   );
 );
 
+
 compile_for_ptr!(i16, XXX);
+compile_for_ptr!(u16, XXX);
 compile_for_ptr!(i32, XXX);
+compile_for_ptr!(u32, XXX);
 compile_for_ptr!(i64, XXX);
+compile_for_ptr!(u64, XXX);
 compile_for_ptr!(f32, XXX);
 compile_for_ptr!(f64, XXX);
 

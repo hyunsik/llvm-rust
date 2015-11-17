@@ -267,46 +267,63 @@ impl Builder
   bin_op!{create_or, LLVMBuildOr}
   bin_op!{create_xor, LLVMBuildXor}
   
-  /// Build an instruction to compare two values with the predicate given.
-  pub fn create_cmp(&self, a: &Value, b: &Value, pred: Predicate) -> &Value 
-  {
-    let (at, bt) = (a.get_type(), b.get_type());
-    assert_eq!(at, bt);
+  fn create_cmp_internal(&self, l: &Value, r: &Value, 
+  											 pred: Predicate, signed: bool) -> &Value {
+  	let (lhs_ty, rhs_ty) = (l.get_type(), r.get_type());
+    assert_eq!(lhs_ty, rhs_ty);
     
-    if at.is_integer() {            
-      let pred = match pred {
-          Predicate::Equal => LLVMIntPredicate::LLVMIntEQ,
-          Predicate::NotEqual => LLVMIntPredicate::LLVMIntNE,
-          Predicate::GreaterThan => LLVMIntPredicate::LLVMIntSGT,
-          Predicate::GreaterThanOrEqual => LLVMIntPredicate::LLVMIntSGE,
-          Predicate::LessThan => LLVMIntPredicate::LLVMIntSLT,
-          Predicate::LessThanOrEqual => LLVMIntPredicate::LLVMIntSLE
+    if lhs_ty.is_integer() {
+	    let p = match (pred, signed) {
+	    	(Predicate::Equal, _)                  => LLVMIntPredicate::LLVMIntEQ,
+	    	(Predicate::NotEqual, _)               => LLVMIntPredicate::LLVMIntNE,
+	    	(Predicate::LessThan, true)            => LLVMIntPredicate::LLVMIntSLT,
+	    	(Predicate::LessThan, false)           => LLVMIntPredicate::LLVMIntULT,
+	    	(Predicate::LessThanOrEqual, true)     => LLVMIntPredicate::LLVMIntSLE,
+	    	(Predicate::LessThanOrEqual, false)    => LLVMIntPredicate::LLVMIntULE,
+	    	(Predicate::GreaterThan, true)         => LLVMIntPredicate::LLVMIntSGT,
+	    	(Predicate::GreaterThan, false)        => LLVMIntPredicate::LLVMIntUGT,
+	    	(Predicate::GreaterThanOrEqual, true)  => LLVMIntPredicate::LLVMIntSGE,
+	    	(Predicate::GreaterThanOrEqual, false) => LLVMIntPredicate::LLVMIntUGE,
+	    };
+	    
+	    unsafe {
+		    core::LLVMBuildICmp(self.into(), 
+	    		                  p, 
+	     		                  l.into(), r.into(), 
+	     		                  NULL_NAME.as_ptr())
+	    }.into()
+	     
+    } else if lhs_ty.is_float() {
+    	let p = match pred {
+        Predicate::Equal => LLVMRealPredicate::LLVMRealOEQ,
+        Predicate::NotEqual => LLVMRealPredicate::LLVMRealONE,
+        Predicate::GreaterThan => LLVMRealPredicate::LLVMRealOGT,
+        Predicate::GreaterThanOrEqual => LLVMRealPredicate::LLVMRealOGE,
+        Predicate::LessThan => LLVMRealPredicate::LLVMRealOLT,
+        Predicate::LessThanOrEqual => LLVMRealPredicate::LLVMRealOLE
       };
-      unsafe { 
-      	core::LLVMBuildICmp(self.into(), 
-      		                  pred, 
-      		                  a.into(), b.into(), 
-      		                  NULL_NAME.as_ptr()) 
-      }.into()
-      
-    } else if at.is_float() {
-      let pred = match pred {
-          Predicate::Equal => LLVMRealPredicate::LLVMRealOEQ,
-          Predicate::NotEqual => LLVMRealPredicate::LLVMRealONE,
-          Predicate::GreaterThan => LLVMRealPredicate::LLVMRealOGT,
-          Predicate::GreaterThanOrEqual => LLVMRealPredicate::LLVMRealOGE,
-          Predicate::LessThan => LLVMRealPredicate::LLVMRealOLT,
-          Predicate::LessThanOrEqual => LLVMRealPredicate::LLVMRealOLE
-      };
-      unsafe { 
+    	
+   	  unsafe { 
       	core::LLVMBuildFCmp(self.into(), 
-      		                 pred, a.into(), b.into(), 
+      		                 p, l.into(), r.into(), 
       		                 NULL_NAME.as_ptr()) 
       }.into()
-      
+    	 
     } else {
-        panic!("expected numbers, got {:?}", at)
+      panic!("expected numbers, got {:?}", lhs_ty)
     }
+  } 
+  
+  /// Build an instruction to compare two values with the predicate given.
+  pub fn create_cmp(&self, l: &Value, r: &Value, pred: Predicate) -> &Value 
+  {
+    self.create_cmp_internal(l, r, pred, true)
+  }
+  
+  /// Build an instruction to compare two values with the predicate given.
+  pub fn create_ucmp(&self, l: &Value, r: &Value, pred: Predicate) -> &Value 
+  {
+    self.create_cmp_internal(l, r, pred, false)
   }
 }
 
