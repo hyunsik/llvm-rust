@@ -321,3 +321,31 @@ impl GetContext for Value {
     }
 }
 impl_display!(Value, LLVMPrintValueToString);
+
+pub struct ValueIter<'a> {
+  cur : &'a Value,
+  step: unsafe extern "C" fn(LLVMValueRef) -> LLVMValueRef,
+}
+
+impl<'a> Iterator for ValueIter<'a> {
+    type Item = &'a Value;
+
+    fn next(&mut self) -> Option<&'a Value> {
+        let old: LLVMValueRef = self.cur.into();
+        if !old.is_null() {
+            self.cur = unsafe { (self.step)(old) }.into();
+            Some(old.into())
+        } else {
+            None
+        }
+    }
+}
+
+fn iter_functions(module: &::module::Module) -> ValueIter {
+	unsafe {
+  	ValueIter {
+    	cur:  core::LLVMGetFirstFunction(module.into()).into(),
+      step: core::LLVMGetNextFunction,
+    }
+  }
+}
