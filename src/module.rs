@@ -321,12 +321,12 @@ impl<'a> Iterator for Functions<'a>
   
   fn next(&mut self) -> Option<&'a Function> 
   {
-    if self.value.is_null() {
-      None
+    let old: LLVMValueRef = self.value;
+    if !old.is_null() {
+       self.value = unsafe { core::LLVMGetNextFunction(old) };
+       Some(old.into())
     } else {
-      let c_next = unsafe { core::LLVMGetNextFunction(self.value) };
-      self.value = c_next;
-      Some(self.value.into())
+       None
     }
   }
 }
