@@ -145,6 +145,7 @@ impl Arg {
         unsafe { core::LLVMRemoveAttribute(self.into(), attr.into()) }
     }
 }
+
 /// A function that can be called and contains blocks.
 pub struct Function;
 native_ref!(&Function = LLVMValueRef);
@@ -243,6 +244,21 @@ impl Function {
         unsafe { core::LLVMRemoveFunctionAttr(self.into(), attr.into()) }
     }
 }
+
+impl<'a> IntoIterator for &'a Function 
+{
+  type Item = &'a Arg;
+  type IntoIter = ValueIter<'a, &'a Arg>;
+  /// Iterate through the functions in the module
+  fn into_iter(self) -> ValueIter<'a, &'a Arg> 
+  {    
+ 		ValueIter::new(
+ 			unsafe { core::LLVMGetFirstParam(self.into()) },
+ 			core::LLVMGetNextParam
+ 		)  	
+  }
+}
+
 impl GetContext for Function {
     fn get_context(&self) -> &Context {
         self.get_type().get_context()
