@@ -88,6 +88,14 @@ impl Module
     })
   }
   
+  pub fn global_values<'a>(&'a self) -> ValueIter<&'a GlobalValue>
+  {
+  	ValueIter::new(
+ 			unsafe { core::LLVMGetFirstGlobal(self.into()) },
+ 			core::LLVMGetNextGlobal
+ 		) 
+  }
+  
   pub fn parse_ir<'a>(context: &'a Context, path: &str) -> Result<CSemiBox<'a, Module>, CBox<str>> 
   {
   	unsafe {
