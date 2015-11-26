@@ -23,7 +23,7 @@ use buffer::MemoryBuffer;
 use context::{Context, GetContext};
 use util;
 use ty::Type;
-use value::{Function, GlobalValue, Value};
+use value::{Function, GlobalValue, Value, ValueIter};
 
 /// Represents a single compilation unit of code.
 ///
@@ -296,40 +296,17 @@ dispose!(Module, LLVMModule, core::LLVMDisposeModule);
 impl<'a> IntoIterator for &'a Module 
 {
   type Item = &'a Function;
-  type IntoIter = Functions<'a>;
+  type IntoIter = ValueIter<'a, &'a Function>;
   /// Iterate through the functions in the module
-  fn into_iter(self) -> Functions<'a> 
-  {
-    Functions {
-      value: unsafe { core::LLVMGetFirstFunction(self.into()) },
-      marker: PhantomData
-    }
+  fn into_iter(self) -> ValueIter<'a, &'a Function> 
+  {    
+ 		ValueIter::new(
+ 			unsafe { core::LLVMGetFirstFunction(self.into()) },
+ 			core::LLVMGetNextFunction
+ 		)  	
   }
 }
 
-#[derive(Copy, Clone)]
-/// An iterator through the functions contained in a module.
-pub struct Functions<'a> 
-{
-  value: LLVMValueRef,
-  marker: PhantomData<&'a ()>
-}
-
-impl<'a> Iterator for Functions<'a> 
-{
-  type Item = &'a Function;
-  
-  fn next(&mut self) -> Option<&'a Function> 
-  {
-    let old: LLVMValueRef = self.value;
-    if !old.is_null() {
-       self.value = unsafe { core::LLVMGetNextFunction(old) };
-       Some(old.into())
-    } else {
-       None
-    }
-  }
-}
 
 #[repr(C)]
 #[derive(Copy, Clone)]

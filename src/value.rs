@@ -322,30 +322,42 @@ impl GetContext for Value {
 }
 impl_display!(Value, LLVMPrintValueToString);
 
-pub struct ValueIter<'a> {
-  cur : &'a Value,
-  step: unsafe extern "C" fn(LLVMValueRef) -> LLVMValueRef,
+
+/// Value Iterator implementation.
+///
+/// T can be all descendent types of LLVMValueRef.  
+#[derive(Copy, Clone)]
+pub struct ValueIter<'a, T: From<LLVMValueRef>> {
+  cur    : LLVMValueRef,
+  step   : unsafe extern "C" fn(LLVMValueRef) -> LLVMValueRef,
+  marker1: ::std::marker::PhantomData<&'a ()>,
+  marker2: ::std::marker::PhantomData<T>,
 }
 
-impl<'a> Iterator for ValueIter<'a> {
-    type Item = &'a Value;
-
-    fn next(&mut self) -> Option<&'a Value> {
-        let old: LLVMValueRef = self.cur.into();
-        if !old.is_null() {
-            self.cur = unsafe { (self.step)(old) }.into();
-            Some(old.into())
-        } else {
-            None
-        }
-    }
+impl<'a, T: From<LLVMValueRef>> ValueIter<'a, T>
+{
+	pub fn new(cur: LLVMValueRef, 
+		         step: unsafe extern "C" fn(LLVMValueRef) -> LLVMValueRef) -> Self
+	{
+		ValueIter {
+			cur: cur,
+			step: step,
+			marker1: ::std::marker::PhantomData,
+			marker2: ::std::marker::PhantomData
+		}
+	}
 }
 
-fn iter_functions(module: &::module::Module) -> ValueIter {
-	unsafe {
-  	ValueIter {
-    	cur:  core::LLVMGetFirstFunction(module.into()).into(),
-      step: core::LLVMGetNextFunction,
+impl<'a, T: From<LLVMValueRef>> Iterator for ValueIter<'a, T> {
+  type Item = T;
+
+  fn next(&mut self) -> Option<T> {
+    let old: LLVMValueRef = self.cur;
+      if !old.is_null() {
+        self.cur = unsafe { (self.step)(old) };
+        Some(old.into())
+      } else {
+        None
+      }
     }
-  }
 }
