@@ -79,6 +79,7 @@ impl Module
       global.into()
     })
   }
+  
   /// Get the global with the name given, or `None` if no global with that name exists.
   pub fn get_global<'a>(&'a self, name: &str) -> Option<&'a GlobalValue> 
   {
@@ -88,6 +89,7 @@ impl Module
     })
   }
   
+  /// Get an iterator of global values
   pub fn global_values<'a>(&'a self) -> ValueIter<&'a GlobalValue>
   {
   	ValueIter::new(
@@ -96,6 +98,7 @@ impl Module
  		) 
   }
   
+  /// Parse this LLVM IR into a module, or return an error string
   pub fn parse_ir<'a>(context: &'a Context, path: &str) -> Result<CSemiBox<'a, Module>, CBox<str>> 
   {
   	unsafe {
