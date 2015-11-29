@@ -47,6 +47,7 @@ use ty::{FunctionType, Type};
 /// A typed value that can be used as an operand in instructions.
 pub struct Value;
 native_ref!(&Value = LLVMValueRef);
+impl_display!(Value, LLVMPrintValueToString);
 
 impl Value 
 {    
@@ -357,6 +358,7 @@ impl Function
       return true;
     }
   }
+  
   /// Remove the attribute given from this function.
   pub fn remove_attribute(&self, attr: Attribute) 
   {
@@ -448,25 +450,27 @@ pub enum Attribute
 
 impl From<LLVMAttribute> for Attribute 
 {
-  fn from(attr: LLVMAttribute) -> Attribute {
+  fn from(attr: LLVMAttribute) -> Attribute 
+  {
     unsafe { mem::transmute(attr) }
   }
 }
 
 impl From<Attribute> for LLVMAttribute 
 {
-  fn from(attr: Attribute) -> LLVMAttribute {
+  fn from(attr: Attribute) -> LLVMAttribute 
+  {
     unsafe { mem::transmute(attr) }
   }
 }
 
 impl GetContext for Value 
 {
-  fn get_context(&self) -> &Context {
+  fn get_context(&self) -> &Context 
+  {
     self.get_type().get_context()
   }
 }
-impl_display!(Value, LLVMPrintValueToString);
 
 
 /// Value Iterator implementation.
@@ -498,7 +502,8 @@ impl<'a, T: From<LLVMValueRef>> Iterator for ValueIter<'a, T>
 {
   type Item = T;
 
-  fn next(&mut self) -> Option<T> {
+  fn next(&mut self) -> Option<T> 
+  {
     let old: LLVMValueRef = self.cur;
     
     if !old.is_null() {
