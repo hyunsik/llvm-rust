@@ -315,6 +315,14 @@ impl Function
     }
   }
   
+  /// Returns the number of function parameters
+  pub fn num_params(&self) -> usize
+  {
+    unsafe {
+      LLVMCountParams(self.into()) as usize
+    }
+  }
+  
   /// Add the attribute given to this function.
   pub fn add_attribute(&self, attr: Attribute) 
   {
