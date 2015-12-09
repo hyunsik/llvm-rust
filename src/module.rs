@@ -201,6 +201,14 @@ impl Module
     }
   }
   
+  /// Set the target data of this module to the target data string given.
+  pub fn set_target(&self, target: &str) 
+  {
+      let c_target = CString::new(target).unwrap();
+      unsafe { core::LLVMSetTarget(self.into(), c_target.as_ptr()) }
+  }
+  
+  /// Get the data layout of this module
   pub fn get_data_layout(&self) -> &str 
   {
   	unsafe {
@@ -209,11 +217,11 @@ impl Module
   	}
   }
   
-  /// Set the target data of this module to the target data string given.
-  pub fn set_target(&self, target: &str) 
+  /// Set the data layout of this module
+  pub fn set_data_layout(&self, layout: &str) 
   {
-      let c_target = CString::new(target).unwrap();
-      unsafe { core::LLVMSetTarget(self.into(), c_target.as_ptr()) }
+    let c_layout = CString::new(layout).unwrap();
+  	unsafe { core::LLVMSetDataLayout(self.into(), c_layout.as_ptr()); }
   }
   
   /// Verify that the module is safe to run, returning a string detailing the error
